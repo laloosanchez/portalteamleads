@@ -3,472 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiDi Team Leader Dashboard</title>
-    <!-- Tailwind CSS CDN -->
+    <title>DiDi - Dashboard Team Leader</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        didi: {
-                            DEFAULT: '#FF7D00',
-                            dark: '#E56D00',
-                            light: '#FFA34D'
-                        },
-                        darkgray: '#333333'
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
-        
-        /* Spinner Animation */
-        .spinner {
-            border: 4px solid rgba(255, 125, 0, 0.1);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border-left-color: #FF7D00;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Transition for collapsible section */
-        #details-section {
-            transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, padding 0.5s ease-in-out;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-        }
-        #details-section.open {
-            max-height: 5000px; /* Large enough to fit content */
-            opacity: 1;
-        }
-        
-        /* Custom scrollbar for the table */
-        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .bg-didi-orange { background-color: #FF7D00; }
+        .text-didi-orange { color: #FF7D00; }
+        .border-didi-orange { border-color: #FF7D00; }
+        .progress-bar-fill { transition: width 0.5s ease-in-out; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+<body class="bg-gray-100 font-sans min-h-screen">
 
-    <!-- ================= LOGIN VIEW ================= -->
-    <div id="login-view" class="flex-grow flex items-center justify-center p-4">
-        <div class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full border-t-4 border-didi">
+    <!-- PANTALLA DE LOGIN -->
+    <div id="login-screen" class="flex items-center justify-center min-h-screen bg-gray-900">
+        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
             <div class="flex justify-center mb-6">
-                <div class="bg-didi text-white font-bold text-3xl rounded-full w-16 h-16 flex items-center justify-center shadow-md">
-                    Di
-                </div>
+                <!-- Logo DiDi (texto estilizado) -->
+                <h1 class="text-4xl font-bold text-gray-900">Di<span class="text-didi-orange">Di</span></h1>
             </div>
-            <h2 class="text-2xl font-bold text-center text-darkgray mb-2">Portal Team Leaders</h2>
-            <p class="text-center text-gray-500 mb-8 text-sm">Ingresa para ver el desempeño de tu equipo</p>
+            <h2 class="text-xl font-semibold text-center mb-6 text-gray-700">Acceso Team Leaders</h2>
             
+            <div id="error-msg" class="hidden mb-4 p-3 bg-red-100 text-red-700 rounded text-sm text-center">
+                Correo no encontrado. Acceso denegado.
+            </div>
+
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                    <input type="email" id="email-input" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-didi focus:border-didi outline-none transition" placeholder="tu.correo@ejemplo.com">
+                    <label class="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+                    <input type="email" id="email-input" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-didi-orange focus:border-didi-orange" placeholder="tu.correo@empresa.com">
                 </div>
-                
-                <div id="auth-error-msg" class="text-red-500 text-sm text-center hidden bg-red-50 p-2 rounded-lg border border-red-100"></div>
-
-                <button type="submit" id="login-btn" class="w-full bg-didi hover:bg-didi-dark text-white font-semibold py-2.5 rounded-lg transition-colors shadow-md flex justify-center items-center gap-2">
+                <button type="submit" id="btn-login" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-didi-orange hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-didi-orange">
                     Ingresar
                 </button>
             </form>
+            
+            <div id="loading-msg" class="hidden mt-4 text-center text-sm text-gray-500">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-didi-orange inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Cargando datos...
+            </div>
         </div>
     </div>
 
-    <!-- ================= LOADING VIEW ================= -->
-    <div id="loading-view" class="hidden flex-grow flex-col items-center justify-center p-4">
-        <div class="spinner mb-4"></div>
-        <p id="loading-text" class="text-gray-500 font-medium animate-pulse text-center">Buscando información...</p>
-    </div>
-
-    <!-- ================= ERROR VIEW ================= -->
-    <div id="error-view" class="hidden flex-grow flex-col items-center justify-center p-4 text-center">
-        <div class="bg-red-50 p-8 rounded-2xl max-w-md w-full border border-red-100 shadow-sm">
-            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Acceso Denegado</h2>
-            <p id="error-description" class="text-gray-600 mb-6">Tu correo electrónico no se encuentra registrado.</p>
-            <button id="back-to-login-btn" class="bg-darkgray hover:bg-black text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
-                Volver
-            </button>
-        </div>
-    </div>
-
-    <!-- ================= DASHBOARD VIEW ================= -->
-    <div id="dashboard-view" class="hidden flex-col flex-grow w-full">
+    <!-- PANTALLA PRINCIPAL (DASHBOARD) -->
+    <div id="dashboard-screen" class="hidden">
         <!-- Navbar -->
-        <nav class="bg-white shadow-sm sticky top-0 z-50 border-b-[3px] border-didi">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="bg-didi text-white font-bold text-xl rounded-full w-10 h-10 flex items-center justify-center">Di</div>
-                    <h1 class="text-xl font-bold text-darkgray hidden sm:block">TL Dashboard</h1>
-                </div>
-                
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden md:block">
-                        <p class="text-xs text-gray-500 font-medium">Sesión iniciada como</p>
-                        <p id="nav-user-email" class="text-sm font-bold text-darkgray truncate max-w-[200px]"></p>
+        <nav class="bg-gray-900 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <h1 class="text-2xl font-bold text-white">Di<span class="text-didi-orange">Di</span></h1>
+                        <span class="ml-4 text-gray-300 text-sm hidden sm:block border-l border-gray-600 pl-4" id="tl-name-display"></span>
                     </div>
-                    <button id="logout-btn" class="text-sm font-medium text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors border border-red-100">
-                        Cerrar sesión
-                    </button>
+                    <div class="flex items-center">
+                        <button onclick="logout()" class="text-gray-300 hover:text-white text-sm font-medium">Salir</button>
+                    </div>
                 </div>
             </div>
         </nav>
 
-        <!-- Main Content -->
-        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-            <div class="flex flex-col gap-6">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- Resumen Mensual y Selector -->
+            <div class="bg-white rounded-lg shadow p-6 mb-8 flex flex-col sm:flex-row justify-between items-center border-l-4 border-didi-orange">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-700">Comisión Total Acumulada</h2>
+                    <p class="text-3xl font-bold text-gray-900 mt-1" id="comision-total">$0.00</p>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ver desempeño de:</label>
+                    <select id="week-selector" onchange="updateDashboard()" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-didi-orange focus:border-didi-orange sm:text-sm rounded-md shadow-sm border">
+                        <option value="1">Semana 1</option>
+                        <option value="2">Semana 2</option>
+                        <option value="3">Semana 3</option>
+                        <option value="4">Semana 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tarjetas de Parámetros Semanales (Sin Tenure) -->
+            <h3 class="text-lg font-medium text-gray-900 mb-4" id="titulo-semana">Resultados Semanales</h3>
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-3 mb-8">
                 
-                <!-- Monthly Summary Panel -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-end bg-white p-6 rounded-2xl shadow-sm border border-gray-100 gap-4">
-                    <div>
-                        <h2 class="text-sm uppercase tracking-wider text-gray-500 font-semibold mb-1">Bienvenido</h2>
-                        <h3 id="display-tl-name" class="text-3xl font-bold text-darkgray">Nombre TL</h3>
-                    </div>
-                    <div class="text-left md:text-right bg-orange-50 px-6 py-4 rounded-xl border border-orange-100 w-full md:w-auto">
-                        <p class="text-sm text-didi font-bold uppercase tracking-wide">Comisión Mensual</p>
-                        <p id="display-month-total" class="text-4xl font-black text-darkgray mt-1">$0.00</p>
+                <!-- Tarjeta DFT -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">DFT</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900" id="card-dft-actual">0</div>
+                                        <div class="ml-2 text-sm text-gray-500">/ <span id="card-dft-meta">0</span> Meta</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Progreso</span>
+                                <span id="card-dft-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="card-dft-bar" class="bg-didi-orange h-2 rounded-full progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Weekly Cards Container -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="weekly-cards-container">
-                    <!-- Cards will be injected via JavaScript -->
-                </div>
-
-                <!-- Toggle Details Button -->
-                <div class="flex justify-center mt-4">
-                    <button id="toggle-details-btn" class="bg-darkgray hover:bg-black text-white px-8 py-3 rounded-full font-medium shadow-lg hover:shadow-xl transition-all flex items-center gap-2 transform hover:-translate-y-1">
-                        <span>Ver Detalle de Promotores</span>
-                        <svg id="toggle-icon" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </button>
-                </div>
-
-                <!-- Promotores Details Section -->
-                <div id="details-section" class="bg-white rounded-2xl shadow-sm border border-gray-100 mt-2 mb-10">
-                    <div class="p-6 border-b border-gray-100">
-                        <h3 class="text-lg font-bold text-darkgray">Desempeño Individual por Promotor</h3>
-                        <p class="text-sm text-gray-500">Métricas consolidadas de las 4 semanas.</p>
+                <!-- Tarjeta Activación -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Activación</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900" id="card-act-actual">0</div>
+                                        <div class="ml-2 text-sm text-gray-500">/ <span id="card-act-meta">0</span> Meta</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Progreso</span>
+                                <span id="card-act-pct">0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="card-act-bar" class="bg-green-500 h-2 rounded-full progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto custom-scrollbar">
-                        <table class="w-full text-sm text-left text-gray-500">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-4 font-semibold">Promotor</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold">Ciudad</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-center">SU Total</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-center">Activaciones</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-center">Metas</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-center">DFT Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="promotores-table-body">
-                                <!-- Rows will be injected via JS -->
-                            </tbody>
-                        </table>
+                </div>
+
+                <!-- Tarjeta Conversión -->
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Conversión</dt>
+                                    <dd class="flex items-baseline">
+                                        <div class="text-2xl font-semibold text-gray-900" id="card-conv-actual">0%</div>
+                                        <div class="ml-2 text-sm text-gray-500">/ <span id="card-conv-meta">60%</span> Meta</div>
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                <span>Progreso</span>
+                                <span>-</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div id="card-conv-bar" class="bg-blue-500 h-2 rounded-full progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
             </div>
+
+            <!-- Tabla de Detalle Promotores -->
+            <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+                <div class="px-4 py-5 sm:px-6 flex justify-between items-center bg-gray-50 cursor-pointer" onclick="toggleTable()">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Detalle por Promotor (Acumulado Mensual)</h3>
+                    <span id="table-icon" class="text-gray-500 text-xl font-bold">+</span>
+                </div>
+                <div class="border-t border-gray-200 hidden overflow-x-auto" id="promoters-table-container">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Promotor</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SU Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activación Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Meta DFT Total</th> <!-- Columna renombrada -->
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DFT Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" id="table-body">
+                            <!-- Los datos se insertan aquí con JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </main>
     </div>
 
-    <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
-        // --- Configuration ---
+        // ⚠️ REEMPLAZA ESTA URL si generaste una nueva implementación en Apps Script
         const API_URL = "https://script.google.com/macros/s/AKfycbzj7r3-BbY_AMdNgXi9WHGwsRqah3o9p5T9Fi--C-eE3UQFJJz_u4UNqjVYl8C-Fjaj9Q/exec";
         
-        // --- Views ---
-        const loginView = document.getElementById('login-view');
-        const loadingView = document.getElementById('loading-view');
-        const errorView = document.getElementById('error-view');
-        const dashboardView = document.getElementById('dashboard-view');
-        
-        // --- Elements ---
+        let appData = { resumen: [], detalle: [] };
+        let currentUserData = null;
+
+        // Elementos UI
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
         const loginForm = document.getElementById('login-form');
-        const emailInput = document.getElementById('email-input');
-        const authErrorMsg = document.getElementById('auth-error-msg');
-        const logoutBtn = document.getElementById('logout-btn');
-        const backToLoginBtn = document.getElementById('back-to-login-btn');
-        const loadingText = document.getElementById('loading-text');
+        const errorMsg = document.getElementById('error-msg');
+        const loadingMsg = document.getElementById('loading-msg');
+        const btnLogin = document.getElementById('btn-login');
+        const tableContainer = document.getElementById('promoters-table-container');
+        const tableIcon = document.getElementById('table-icon');
 
-        // --- Dashboard Elements ---
-        const displayTlName = document.getElementById('display-tl-name');
-        const displayMonthTotal = document.getElementById('display-month-total');
-        const weeklyCardsContainer = document.getElementById('weekly-cards-container');
-        const navUserEmail = document.getElementById('nav-user-email');
-        const toggleDetailsBtn = document.getElementById('toggle-details-btn');
-        const detailsSection = document.getElementById('details-section');
-        const toggleIcon = document.getElementById('toggle-icon');
-        const promotoresTableBody = document.getElementById('promotores-table-body');
-
-        // --- Navigation ---
-        function showView(viewElement) {
-            [loginView, loadingView, errorView, dashboardView].forEach(el => el.classList.add('hidden'));
-            viewElement.classList.remove('hidden');
-            if (viewElement === dashboardView || viewElement === loginView) {
-                viewElement.classList.add('flex');
-            } else {
-                viewElement.classList.add('flex');
-            }
-        }
-
-        // --- Login Logic ---
+        // Función de Login
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            authErrorMsg.classList.add('hidden');
-            const email = emailInput.value.trim().toLowerCase();
+            const email = document.getElementById('email-input').value.trim().toLowerCase();
+            
+            errorMsg.classList.add('hidden');
+            loadingMsg.classList.remove('hidden');
+            btnLogin.disabled = true;
 
-            if (!email) {
-                authErrorMsg.textContent = 'Por favor ingresa un correo válido.';
-                authErrorMsg.classList.remove('hidden');
-                return;
-            }
-
-            showView(loadingView);
-            loadingText.innerHTML = "Descargando datos del equipo...<br><span class='text-xs text-gray-400'>(Esto puede tomar unos segundos)</span>";
-            await fetchAndProcessData(email);
-        });
-
-        // --- Logout Logic ---
-        const handleLogout = () => {
-            detailsSection.classList.remove('open');
-            toggleIcon.classList.remove('rotate-180');
-            emailInput.value = '';
-            showView(loginView);
-        };
-
-        logoutBtn.addEventListener('click', handleLogout);
-        backToLoginBtn.addEventListener('click', handleLogout);
-
-        // --- Data Fetching & Processing ---
-        async function fetchAndProcessData(userEmail) {
             try {
+                // Descargar datos
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error("Network response was not ok");
-                const data = await response.json();
-                
-                // Find Team Leader by Email in the 'resumen' array
-                const tlData = data.resumen.find(item => {
-                    const sheetEmail = item['Correo'] ? String(item['Correo']).toLowerCase().trim() : '';
-                    return sheetEmail === userEmail;
-                });
+                appData = await response.json();
 
-                if (tlData) {
-                    navUserEmail.textContent = userEmail;
-                    const tlName = tlData['Team Leader'];
-                    
-                    // Filter details for this specific Team Leader
-                    const tlDetalle = data.detalle.filter(item => item['Team Leader'] === tlName);
-                    
-                    renderDashboard(tlData, tlDetalle);
-                    showView(dashboardView);
+                // Buscar al Team Leader por correo
+                // Asegúrate de que la columna en Sheets se llame "Correo"
+                currentUserData = appData.resumen.find(row => 
+                    row['Correo'] && row['Correo'].toString().trim().toLowerCase() === email
+                );
+
+                if (currentUserData) {
+                    showDashboard();
                 } else {
-                    document.getElementById('error-description').textContent = 
-                        `El correo "${userEmail}" no está registrado en la base de datos (Columna 'Correo').`;
-                    showView(errorView);
+                    showError();
                 }
             } catch (error) {
-                console.error("Fetch error:", error);
-                loadingText.innerHTML = `<span class="text-red-500">Error de conexión al cargar datos. <br>Revisa tu conexión e intenta de nuevo.</span>`;
-                setTimeout(() => showView(loginView), 3500);
+                console.error("Error al cargar datos:", error);
+                showError();
             }
+        });
+
+        function showError() {
+            loadingMsg.classList.add('hidden');
+            errorMsg.classList.remove('hidden');
+            btnLogin.disabled = false;
         }
 
-        // --- Helpers ---
-        const formatCurrency = (val) => {
-            const num = parseFloat(val);
-            return isNaN(num) ? '$0.00' : new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(num);
-        };
-        
-        const formatPercent = (val) => {
-            const num = parseFloat(val);
-            if(isNaN(num)) return '0%';
-            // If the value is a decimal (e.g. 0.8), multiply by 100. Otherwise, leave as is.
-            const percent = num <= 2 ? num * 100 : num; 
-            return `${percent.toFixed(0)}%`;
-        };
-        
-        const formatNumber = (val) => {
-            const num = parseFloat(val);
-            return isNaN(num) ? '0' : num;
-        };
-
-        // Calculates progress percentage for the bars (max 100%)
-        const calculateProgress = (actual, meta) => {
-            const a = parseFloat(actual) || 0;
-            const m = parseFloat(meta) || 1; 
-            let pct = (a / m) * 100;
-            if (pct > 100) pct = 100;
-            if (pct < 0) pct = 0;
-            return pct;
-        };
-
-        // --- Rendering ---
-        function renderDashboard(tlData, tlDetalle) {
-            // Set Header information
-            displayTlName.textContent = tlData['Team Leader'] || 'Sin Nombre';
-            displayMonthTotal.textContent = formatCurrency(tlData['SUBTOTAL']);
+        function showDashboard() {
+            loginScreen.classList.add('hidden');
+            dashboardScreen.classList.remove('hidden');
             
-            // Render 4 Weekly Cards
-            weeklyCardsContainer.innerHTML = '';
+            // Setear nombre y total
+            document.getElementById('tl-name-display').innerText = currentUserData['Team Leader'] || "Team Leader";
             
-            for(let i = 1; i <= 4; i++) {
-                const pctDFT = calculateProgress(tlData[`DFT Sem ${i}`], tlData[`Meta DFT Sem ${i}`]);
-                const pctAct = calculateProgress(tlData[`Activación Semana ${i}`], tlData[`Meta Activación Sem ${i}`]);
+            // Asume que la columna final se llama "SUBTOTAL"
+            const total = currentUserData['SUBTOTAL'] || 0; 
+            document.getElementById('comision-total').innerText = formatearMoneda(total);
 
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow overflow-hidden flex flex-col";
-                
-                card.innerHTML = `
-                    <div class="bg-gray-50 px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-                        <h4 class="font-bold text-gray-800">Semana ${i}</h4>
-                        <span class="bg-orange-100 text-didi-dark text-xs px-2.5 py-1 rounded-full font-bold">
-                            ${formatCurrency(tlData[`COMISION S${i}`])}
-                        </span>
-                    </div>
-                    
-                    <div class="p-5 flex-grow flex flex-col gap-4">
-                        <!-- Tenure -->
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-500 font-medium">Tenure</span>
-                            <span class="font-bold text-darkgray px-3 py-1 bg-gray-100 rounded-lg text-sm">${formatNumber(tlData[`Tenure [Sem${i}]`])}</span>
-                        </div>
-
-                        <hr class="border-gray-100">
-
-                        <!-- DFT Progress (Orange) -->
-                        <div>
-                            <div class="flex justify-between text-xs mb-1.5">
-                                <span class="text-gray-600 font-bold">DFT</span>
-                                <span class="text-gray-400">Meta: ${formatNumber(tlData[`Meta DFT Sem ${i}`])}</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2 mb-1.5 overflow-hidden">
-                                <div class="bg-didi h-2 rounded-full transition-all duration-1000" style="width: ${pctDFT}%"></div>
-                            </div>
-                            <div class="flex justify-between text-xs">
-                                <span class="font-bold text-darkgray">Real: ${formatNumber(tlData[`DFT Sem ${i}`])}</span>
-                                <span class="font-bold ${getPercentColor(tlData[`Cumplimiento DFT S${i}`])}">
-                                    ${formatPercent(tlData[`Cumplimiento DFT S${i}`])}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Activación Progress (Green) -->
-                        <div>
-                            <div class="flex justify-between text-xs mb-1.5">
-                                <span class="text-gray-600 font-bold">Activación</span>
-                                <span class="text-gray-400">Meta: ${formatNumber(tlData[`Meta Activación Sem ${i}`])}</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2 mb-1.5 overflow-hidden">
-                                <div class="bg-green-500 h-2 rounded-full transition-all duration-1000" style="width: ${pctAct}%"></div>
-                            </div>
-                            <div class="flex justify-between text-xs">
-                                <span class="font-bold text-darkgray">Real: ${formatNumber(tlData[`Activación Semana ${i}`])}</span>
-                                <span class="font-bold ${getPercentColor(tlData[`Cumplimiento Activacion S${i}`])}">
-                                    ${formatPercent(tlData[`Cumplimiento Activacion S${i}`])}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Conversión -->
-                        <div class="bg-gray-50 border border-gray-100 rounded-lg p-3 mt-auto">
-                            <div class="flex justify-between text-xs mb-1">
-                                <span class="text-gray-500 font-medium">Conversión</span>
-                                <span class="text-gray-400">Meta: ${formatPercent(tlData['Meta Conversión [60%]'] || 0.6)}</span>
-                            </div>
-                            <div class="flex items-center justify-between text-sm">
-                                <span class="font-black text-darkgray text-lg">${formatPercent(tlData[`Conversión Semana ${i}`])}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                weeklyCardsContainer.appendChild(card);
-            }
-
-            // Render Promotores Table
-            renderPromotores(tlDetalle);
+            // Cargar datos de la semana 1 por defecto
+            updateDashboard();
+            
+            // Cargar tabla de promotores
+            renderTable();
         }
 
-        function renderPromotores(promotores) {
-            promotoresTableBody.innerHTML = '';
+        function updateDashboard() {
+            const week = document.getElementById('week-selector').value;
+            document.getElementById('titulo-semana').innerText = `Resultados Semana ${week}`;
+
+            // --- DFT ---
+            const dftActual = currentUserData[`DFT Sem ${week}`] || 0;
+            const dftMeta = currentUserData[`Meta DFT Sem ${week}`] || 0;
+            let dftPct = parseFloat(currentUserData[`Cumplimiento DFT S${week}`]) || 0;
             
-            if(promotores.length === 0) {
-                promotoresTableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400 font-medium">No hay promotores registrados para este equipo.</td></tr>`;
-                return;
-            }
+            if (dftPct > 0 && dftPct <= 1) dftPct = dftPct * 100; // Si viene como decimal
 
-            promotores.forEach(p => {
-                // Sum metrics across the 4 weeks
-                const suTotal = formatNumber(p['SU_1']) + formatNumber(p['SU_2']) + formatNumber(p['SU_3']) + formatNumber(p['SU_4']);
-                const actTotal = formatNumber(p['ACTIVACION_1']) + formatNumber(p['ACTIVACION_2']) + formatNumber(p['ACTIVACION_3']) + formatNumber(p['ACTIVACION_4']);
-                const metaTotal = formatNumber(p['META_1']) + formatNumber(p['META_2']) + formatNumber(p['META_3']) + formatNumber(p['META_4']);
-                const dftTotal = formatNumber(p['DFT_1']) + formatNumber(p['DFT_2']) + formatNumber(p['DFT_3']) + formatNumber(p['DFT_4']);
+            document.getElementById('card-dft-actual').innerText = dftActual;
+            document.getElementById('card-dft-meta').innerText = dftMeta;
+            document.getElementById('card-dft-pct').innerText = `${dftPct.toFixed(1)}%`;
+            document.getElementById('card-dft-bar').style.width = `${Math.min(dftPct, 100)}%`;
 
-                const row = document.createElement('tr');
-                row.className = "bg-white border-b border-gray-100 hover:bg-orange-50 transition-colors";
-                row.innerHTML = `
-                    <td class="px-6 py-4 font-bold text-gray-800 whitespace-nowrap">
-                        ${p['Promotor'] || 'Desconocido'}
-                    </td>
-                    <td class="px-6 py-4 text-gray-500">
-                        ${p['Ciudad'] || '-'}
-                    </td>
-                    <td class="px-6 py-4 font-bold text-gray-600 text-center">
-                        ${suTotal}
-                    </td>
-                    <td class="px-6 py-4 font-bold text-gray-600 text-center">
-                        ${actTotal}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        ${metaTotal}
-                    </td>
-                    <td class="px-6 py-4 font-black text-didi text-center">
-                        ${dftTotal}
-                    </td>
+            // --- ACTIVACION ---
+            const actActual = currentUserData[`Activación Semana ${week}`] || 0;
+            const actMeta = currentUserData[`Meta Activación Sem ${week}`] || 0;
+            let actPct = parseFloat(currentUserData[`Cumplimiento Activacion S${week}`]) || 0;
+            
+            if (actPct > 0 && actPct <= 1) actPct = actPct * 100;
+
+            document.getElementById('card-act-actual').innerText = actActual;
+            document.getElementById('card-act-meta').innerText = actMeta;
+            document.getElementById('card-act-pct').innerText = `${actPct.toFixed(1)}%`;
+            document.getElementById('card-act-bar').style.width = `${Math.min(actPct, 100)}%`;
+
+            // --- CONVERSION ---
+            let convActual = parseFloat(currentUserData[`Conversión Semana ${week}`]) || 0;
+            if (convActual > 0 && convActual <= 1) convActual = convActual * 100;
+            
+            // Meta de conversión es fija en 60% según tu archivo
+            const convMeta = 60; 
+            const convPct = (convActual / convMeta) * 100;
+
+            document.getElementById('card-conv-actual').innerText = `${convActual.toFixed(1)}%`;
+            document.getElementById('card-conv-pct').innerText = `${Math.min(convPct, 100).toFixed(1)}%`;
+            document.getElementById('card-conv-bar').style.width = `${Math.min(convPct, 100)}%`;
+        }
+
+        function renderTable() {
+            const tlName = currentUserData['Team Leader'];
+            const promotores = appData.detalle.filter(row => row['Team Leader'] === tlName);
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            promotores.forEach(promo => {
+                // Sumar las 4 semanas
+                const suTotal = (promo['SU_1']||0) + (promo['SU_2']||0) + (promo['SU_3']||0) + (promo['SU_4']||0);
+                const actTotal = (promo['ACTIVACION_1']||0) + (promo['ACTIVACION_2']||0) + (promo['ACTIVACION_3']||0) + (promo['ACTIVACION_4']||0);
+                const metaTotal = (promo['META_1']||0) + (promo['META_2']||0) + (promo['META_3']||0) + (promo['META_4']||0);
+                const dftTotal = (promo['DFT_1']||0) + (promo['DFT_2']||0) + (promo['DFT_3']||0) + (promo['DFT_4']||0);
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${promo['Promotor'] || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${promo['Ciudad'] || '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-semibold">${suTotal}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-semibold">${actTotal}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${metaTotal}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-didi-orange font-semibold">${dftTotal}</td>
                 `;
-                promotoresTableBody.appendChild(row);
+                tbody.appendChild(tr);
             });
         }
 
-        // Color coding for percentages
-        function getPercentColor(val) {
-            const num = parseFloat(val);
-            const isDecimal = num <= 2;
-            const threshold = isDecimal ? 1.0 : 100;
-            
-            if(isNaN(num)) return 'text-gray-400';
-            if(num >= threshold) return 'text-green-600';
-            if(num >= (threshold * 0.8)) return 'text-yellow-500'; 
-            return 'text-red-500'; 
+        function toggleTable() {
+            if (tableContainer.classList.contains('hidden')) {
+                tableContainer.classList.remove('hidden');
+                tableIcon.innerText = '-';
+            } else {
+                tableContainer.classList.add('hidden');
+                tableIcon.innerText = '+';
+            }
         }
 
-        // --- Toggle Details Animation ---
-        toggleDetailsBtn.addEventListener('click', () => {
-            const isOpen = detailsSection.classList.contains('open');
-            if (isOpen) {
-                detailsSection.classList.remove('open');
-                toggleIcon.classList.remove('rotate-180');
-            } else {
-                detailsSection.classList.add('open');
-                toggleIcon.classList.add('rotate-180');
-                // Scroll down slightly so they can see it opens
-                setTimeout(() => {
-                    detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 300);
-            }
-        });
+        function logout() {
+            appData = { resumen: [], detalle: [] };
+            currentUserData = null;
+            document.getElementById('email-input').value = '';
+            
+            dashboardScreen.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            
+            loadingMsg.classList.add('hidden');
+            btnLogin.disabled = false;
+            
+            // Ocultar tabla al salir
+            tableContainer.classList.add('hidden');
+            tableIcon.innerText = '+';
+        }
 
+        function formatearMoneda(valor) {
+            return new Intl.NumberFormat('es-MX', {
+                style: 'currency',
+                currency: 'MXN'
+            }).format(valor);
+        }
     </script>
 </body>
 </html>
